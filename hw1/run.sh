@@ -7,7 +7,7 @@ hdfs dfs -rm -r -skipTrash ${2}_mean
 hdfs dfs -rm -r -skipTrash ${2}_var
 
 yarn jar $HADOOP_STREAMING_JAR \
-        -files mapper_mean.py,reducer_mean.py \
+        -files mapper_mean.py,reducer_mean.py,combiner_mean.py \
         -D mapred.job.name=${3} \
         -mapper 'python3 mapper_mean.py' \
         -combiner 'python3 combiner_mean.py'\
@@ -16,7 +16,7 @@ yarn jar $HADOOP_STREAMING_JAR \
         -output ${2}_mean
         
 yarn jar $HADOOP_STREAMING_JAR \
-        -files mapper_mean.py,reducer_mean.py \
+        -files mapper_std.py,reducer_std.py \
         -D mapred.job.name=${3} \
         -mapper 'python3 mapper_std.py' \
         -reducer 'python3 reducer_std.py' \
