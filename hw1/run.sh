@@ -3,7 +3,8 @@ set -x
 
 HADOOP_STREAMING_JAR=/opt/hadoop-3.2.1/share/hadoop/tools/lib/hadoop-streaming-3.2.1.jar
 
-hdfs dfs -rm -r -skipTrash ${2}
+hdfs dfs -rm -r -skipTrash ${2}_mean
+hdfs dfs -rm -r -skipTrash ${2}_var
 
 yarn jar $HADOOP_STREAMING_JAR \
         -files mapper_mean.py,reducer_mean.py \
