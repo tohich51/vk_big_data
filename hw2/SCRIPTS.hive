@@ -1,0 +1,111 @@
+DROP Table if exists my_table_hw2;
+CREATE TABLE my_table_hw2(
+    mbid STRING,
+    artist_mb STRING,
+    artist_lastfm STRING,
+    country_mb STRING,
+    country_lastfm STRING,
+    tags_mb STRING,
+    tags_lastfm STRING,
+    listeners_lastfm BIGINT,
+    scrobbles_lastfm BIGINT,
+    ambiguous_artist BOOLEAN
+)
+row format delimited
+fields terminated by ','
+stored as textfile
+TBLPROPERTIES ("skip.header.line.count"="1");
+
+LOAD DATA INPATH '/user/artists.csv' INTO TABLE my_table_hw2;
+
+-- Исполнителя с максимальным числом скробблов - 5 баллов
+select artist_mb
+from my_table_hw2
+where scrobbles_lastfm in (
+    SELECT max(scrobbles_lastfm)
+    FROM my_table_hw2
+);
+-- Answer: The Beatles
+
+-- Самый популярный тэг на ластфм - 10 баллов
+select 
+    tmp1.genre,
+    count(*) as count_genre
+from
+    (
+        select tmp.genre from my_table_hw2
+        lateral view outer explode(split(translate(tags_lastfm, ' ', ''), ';')) tmp as genre
+    ) tmp1
+where tmp1.genre is not null
+group by tmp1.genre
+order by count_genre desc limit 2;
+-- Answer: seenlive
+
+
+-- Самые популярные исполнители 10 самых популярных тегов ластфм - 10 баллов
+CREATE VIEW IF NOT EXISTS genres_count (genre, count_genre) as
+select tmp2.genre as genre, tmp2.count_genre as count_genre from(
+select 
+    tmp1.genre as genre,
+    count(*) as count_genre
+from
+    (
+        select tmp.genre from my_table_hw2
+        lateral view outer explode(split(translate(tags_lastfm, ' ', ''), ';')) tmp as genre
+    ) tmp1
+where genre is not null
+group by genre
+order by count_genre desc limit 11) tmp2 order by count_genre asc limit 10;
+
+select collect_list(genre) as genres
+from genres_count;
+-- 10 самых популярных тегов ["femalevocalists","experimental","alternative","indie","pop","All","under2000listeners","electronic","rock","seenlive"]
+select 
+    distinct tmp3.artist_lastfm,
+    tmp3.scrobbles_lastfm
+from (
+select 
+    my_table_hw2.artist_lastfm as artist_lastfm,
+    tmp.tags_lastfm,
+    array_contains(
+        array("femalevocalists","experimental","alternative","indie","pop","All","under2000listeners","electronic","rock","seenlive"),
+        tmp.tags_lastfm
+    ) contains, 
+    my_table_hw2.scrobbles_lastfm as scrobbles_lastfm
+from  my_table_hw2
+
+lateral view outer explode(split(translate(my_table_hw2.tags_lastfm , ' ', ''), ';')) tmp as tags_lastfm
+) tmp3
+where tmp3.contains
+order by tmp3.scrobbles_lastfm desc limit 10;
+-- Answer
+-- 1   The Beatles
+-- 2	Radiohead
+-- 3	Coldplay
+-- 4	Muse
+-- 5	Arctic Monkeys
+-- 6	Pink Floyd
+-- 7	Linkin Park
+-- 8	Red Hot Chili Peppers
+-- 9	Lady Gaga
+-- 10	Metallica
+
+-- 10 городов в которых представлено больше всех исполнителей
+select 
+    my_table_hw2.country_mb,
+    count(*) as counts
+FROM 
+    my_table_hw2 
+group by my_table_hw2.country_mb
+order by counts desc limit 11;
+
+-- 2	United States	164392
+-- 3	United Kingdom	70821
+-- 4	Germany	51255
+-- 5	Japan	46196
+-- 6	France	32006
+-- 7	Canada	20930
+-- 8	Italy	19347
+-- 9	Sweden	16575
+-- 10	Australia	16462
+-- 11	Finland	16336
