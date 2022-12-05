@@ -1,0 +1,12 @@
+2022-12-02 17:28:28 INFO Input arguments
+2022-12-02 17:28:28 INFO inputed arguments:
+../train.csv
+../test.csv
+results.csv
+2022-12-02 17:28:30 INFO Data has been read successfully
+2022-12-02 17:28:30 INFO Data has been prepared correctly
+2022-12-02 17:28:30 INFO Solving least squares problem
+2022-12-02 17:28:30 INFO Making predictions
+2022-12-02 17:28:30 INFO Evaluating metrics
+2022-12-02 17:28:30 INFO Train RMSE=4.368051187530151 Validation RMSE=4.737787561298346 Test RMSE=5.626886112536568
+2022-12-02 17:28:30 INFO Finish your results placed in results.csv (target folder is default)
